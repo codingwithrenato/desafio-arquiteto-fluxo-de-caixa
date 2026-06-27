@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Consolidado.Infrastructure\Consolidado.Infrastructure.csproj" />
     <ProjectReference Include="..\Consolidado.Application\Consolidado.Application.csproj" />
+    <ProjectReference Include="..\..\SharedKernel\SharedKernel.csproj" />
   </ItemGroup>
 
   <ItemGroup>

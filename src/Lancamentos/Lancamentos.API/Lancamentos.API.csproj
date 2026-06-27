@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Lancamentos.Infrastructure\Lancamentos.Infrastructure.csproj" />
     <ProjectReference Include="..\Lancamentos.Application\Lancamentos.Application.csproj" />
+    <ProjectReference Include="..\..\SharedKernel\SharedKernel.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -13,7 +14,6 @@
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
-    <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" />
   </ItemGroup>
 
 </Project>
