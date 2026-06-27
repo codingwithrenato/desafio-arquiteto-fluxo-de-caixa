@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore FluxoDeCaixa.sln
+
+      - name: Build
+        run: dotnet build FluxoDeCaixa.sln --configuration Release --no-restore
+
+      # Os testes de integração sobem Postgres, RabbitMQ e Redis via Testcontainers.
+      # O runner ubuntu-latest já possui o Docker daemon disponível.
+      - name: Test
+        run: dotnet test FluxoDeCaixa.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/test-results.trx'
+          if-no-files-found: ignore
+
+  docker-build:
+    name: Validar build das imagens
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Lançamentos.API image
+        run: docker build -f src/Lancamentos/Lancamentos.API/Dockerfile -t lancamentos-api:ci .
+
+      - name: Build Consolidado.API image
+        run: docker build -f src/Consolidado/Consolidado.API/Dockerfile -t consolidado-api:ci .
+
+      - name: Build Consolidado.Worker image
+        run: docker build -f src/Consolidado/Consolidado.Worker/Dockerfile -t consolidado-worker:ci .
