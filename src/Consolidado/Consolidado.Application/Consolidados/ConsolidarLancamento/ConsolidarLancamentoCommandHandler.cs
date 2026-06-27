@@ -1,0 +1,66 @@
+using BuildingBlocks.Contracts;
+using BuildingBlocks.Results;
+using Consolidado.Application.Abstractions;
+using Consolidado.Domain;
+using MediatR;
+using Microsoft.Extensions.Logging;
+
+namespace Consolidado.Application.Consolidados.ConsolidarLancamento;
+
+/// <summary>
+/// Aplica um lançamento à projeção de saldo diário. Garantias:
+/// - Idempotência: se o EventId já foi processado, ignora (reentrega não duplica saldo).
+/// - Atomicidade: atualização do saldo + marca de idempotência na MESMA transação.
+/// - Cache: invalida a entrada do dia para que a próxima leitura reflita o novo saldo.
+/// </summary>
+public sealed class ConsolidarLancamentoCommandHandler(
+    ISaldoDiarioRepository repository,
+    IEventoProcessadoStore processados,
+    ISaldoConsolidadoCache cache,
+    IUnitOfWork unitOfWork,
+    IClock clock,
+    ILogger<ConsolidarLancamentoCommandHandler> logger)
+    : IRequestHandler<ConsolidarLancamentoCommand, Result>
+{
+    public async Task<Result> Handle(ConsolidarLancamentoCommand command, CancellationToken cancellationToken)
+    {
+        if (await processados.JaProcessadoAsync(command.EventId, cancellationToken))
+        {
+            logger.LogInformation("Evento {EventId} já processado — ignorando (idempotência).", command.EventId);
+            return Result.Success();
+        }
+
+        var saldo = await repository.GetAsync(command.ComercianteId, command.Data, cancellationToken);
+        if (saldo is null)
+        {
+            saldo = SaldoDiario.Criar(command.ComercianteId, command.Data, clock.UtcNow);
+            await repository.AddAsync(saldo, cancellationToken);
+        }
+
+        switch (command.Tipo)
+        {
+            case TipoLancamento.Credito:
+                saldo.AplicarCredito(command.Valor, clock.UtcNow);
+                break;
+            case TipoLancamento.Debito:
+                saldo.AplicarDebito(command.Valor, clock.UtcNow);
+                break;
+            default:
+                return Result.Failure(Error.Validation($"Tipo de lançamento inválido: {command.Tipo}."));
+        }
+
+        await processados.MarcarComoProcessadoAsync(command.EventId, clock.UtcNow, cancellationToken);
+
+        // Persiste saldo + idempotência atomicamente.
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Invalida o cache do dia; a próxima leitura recarrega do banco (read-through).
+        await cache.RemoveAsync(command.ComercianteId, command.Data, cancellationToken);
+
+        logger.LogInformation(
+            "Lançamento {LancamentoId} consolidado ({Tipo} {Valor}). Saldo de {ComercianteId} em {Data}: {Saldo}.",
+            command.LancamentoId, command.Tipo, command.Valor, command.ComercianteId, command.Data, saldo.Saldo);
+
+        return Result.Success();
+    }
+}
