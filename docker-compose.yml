@@ -112,5 +112,18 @@ services:
       consolidado-api:
         condition: service_started
 
+  # ---------- Frontend (console de testes) ----------
+  # SPA Vue 3 servida por Nginx, que também faz reverse-proxy de /api/* para as APIs
+  # (mesma origem → sem CORS, sem alteração nos serviços de backend).
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - lancamentos-api
+      - consolidado-api
+
 volumes:
   pg-data:
