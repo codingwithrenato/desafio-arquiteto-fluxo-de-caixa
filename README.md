@@ -76,18 +76,23 @@ processados no catch-up quando ele voltar. Detalhes em [`docs/architecture.md`](
 docker compose up --build
 ```
 
-Isso sobe: PostgreSQL (com os bancos `lancamentos` e `consolidado`), RabbitMQ, Redis, as 2 APIs
-e o Worker. As migrations são aplicadas automaticamente na subida.
+Isso sobe: PostgreSQL (com os bancos `lancamentos` e `consolidado`), RabbitMQ, Redis, as 2 APIs,
+o Worker e o **frontend** (console de testes). As migrations são aplicadas automaticamente na subida.
 
 ### Endpoints
 
 | Serviço | URL | Descrição |
 |---|---|---|
+| **Console de Testes (frontend)** | **http://localhost:8080** | **UI para testar tudo: autenticar, lançar, consultar e ver o saldo (com auto-refresh)** |
 | Lançamentos — Swagger | http://localhost:8081/swagger | Registrar/consultar lançamentos |
 | Consolidado — Swagger | http://localhost:8082/swagger | Consultar saldo consolidado |
 | Hangfire Dashboard | http://localhost:8083/hangfire | Jobs recorrentes (fechamento/reconciliação) |
 | RabbitMQ Management | http://localhost:15672 | Filas e mensagens (guest/guest) |
 | Health checks | `/health` em 8081 e 8082 | Liveness/readiness |
+
+> 💡 A forma mais fácil de testar é abrir o **Console de Testes** em http://localhost:8080.
+> O frontend (Vue 3) é servido por Nginx, que também faz proxy de `/api/*` para as APIs
+> (mesma origem, sem CORS). Veja [`frontend/`](frontend/).
 
 ### Fluxo de exemplo (curl)
 
@@ -141,6 +146,7 @@ src/
   Consolidado/           Domain · Application · Infrastructure · API · Worker  (+ Hangfire)
 tests/
   Lancamentos.UnitTests  Consolidado.UnitTests  IntegrationTests
+frontend/                Console de testes (Vue 3 + Vite + TS) servido por Nginx (proxy /api)
 docs/                    Arquitetura (C4 + Mermaid), ADRs, NFRs, evoluções
 terraform/               IaC ilustrativa (Azure)
 docker-compose.yml       Orquestração local completa
