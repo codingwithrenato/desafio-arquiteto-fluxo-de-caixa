@@ -21,7 +21,7 @@ picos de **50 req/s**.
         │                                                                    ▲
         ▼                                                                    │
 ┌───────────────────┐    grava lançamento + evento        ┌──────────────────────────────────┐
-│  Lançamentos.API  │──── (mesma transação / Outbox) ────▶ │         PostgreSQL (Lançamentos) │
+│  Lançamentos.API  │──── (mesma transação / Outbox) ────▶ │     PostgreSQL · db lancamentos  │
 │  Clean Arch+CQRS  │                                      └──────────────────────────────────┘
 │  + OutboxDispatcher│─── publica ──▶ ┌───────────────┐
 └───────────────────┘                │   RabbitMQ    │   exchange topic + fila durável + DLQ
@@ -29,12 +29,16 @@ picos de **50 req/s**.
                                               │ consumo assíncrono e idempotente
                                               ▼
 ┌────────────────────┐   projeta saldo   ┌──────────────────────┐      ┌───────────────────┐
-│ Consolidado.Worker │──────────────────▶│ PostgreSQL(Consolid.)│      │  Consolidado.API  │
+│ Consolidado.Worker │──────────────────▶│ PostgreSQL·db consol. │      │  Consolidado.API  │
 │ consumer + Hangfire│                   └──────────────────────┘      │  leitura + cache  │
 │ (fechamento diário)│                            ▲                    └─────────┬─────────┘
 └────────────────────┘                            │   read-through              │
                                                   └──────── Redis ◀──────────────┘
 ```
+
+> **Database-per-service lógico:** os bancos `lancamentos` e `consolidado` são isolados (sem
+> acesso cruzado). Em dev eles compartilham um mesmo servidor PostgreSQL; em produção podem ser
+> instâncias dedicadas trocando apenas o `Host` da connection string (ver [ADR 0002](docs/adr/0002-database-per-service.md)).
 
 **Por que assíncrono?** É a decisão central do desafio: Lançamentos nunca chama o Consolidado
 diretamente. Se o Consolidado cair, os eventos ficam no **Outbox** e na **fila durável** e são
@@ -72,8 +76,8 @@ processados no catch-up quando ele voltar. Detalhes em [`docs/architecture.md`](
 docker compose up --build
 ```
 
-Isso sobe: 2 PostgreSQL, RabbitMQ, Redis, as 2 APIs e o Worker. As migrations são aplicadas
-automaticamente na subida.
+Isso sobe: PostgreSQL (com os bancos `lancamentos` e `consolidado`), RabbitMQ, Redis, as 2 APIs
+e o Worker. As migrations são aplicadas automaticamente na subida.
 
 ### Endpoints
 

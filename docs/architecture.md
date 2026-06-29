@@ -43,7 +43,6 @@ flowchart TB
 
     subgraph svcLanc["Serviço de Lançamentos"]
         apiL["Lançamentos.API<br/>[.NET 8 Minimal API]<br/>registra lançamentos · Outbox dispatcher"]
-        dbL[("PostgreSQL<br/>lançamentos + outbox")]
     end
 
     broker{{"RabbitMQ<br/>exchange topic · fila durável · DLQ"}}
@@ -51,8 +50,12 @@ flowchart TB
     subgraph svcCons["Serviço de Consolidado"]
         worker["Consolidado.Worker<br/>[.NET 8]<br/>consumer idempotente · Hangfire"]
         apiC["Consolidado.API<br/>[.NET 8 Minimal API]<br/>leitura do saldo"]
-        dbC[("PostgreSQL<br/>saldos + idempotência")]
         cache[("Redis<br/>saldo cacheado")]
+    end
+
+    subgraph pg["PostgreSQL (database-per-service lógico)"]
+        dbL[("db lancamentos<br/>lançamentos + outbox")]
+        dbC[("db consolidado<br/>saldos + idempotência")]
     end
 
     cliente -->|"POST /lancamentos"| apiL
@@ -67,7 +70,9 @@ flowchart TB
 ```
 
 **Pontos-chave:**
-- **Database-per-service:** cada serviço tem seu próprio PostgreSQL (sem acoplamento de dados).
+- **Database-per-service (lógico):** cada serviço é dono do seu banco (`lancamentos`,
+  `consolidado`), sem acesso cruzado. Em dev compartilham um mesmo servidor PostgreSQL; a
+  separação física em instâncias dedicadas é só trocar o `Host` (ver [ADR 0002](adr/0002-database-per-service.md)).
 - **Outbox dispatcher** roda dentro da `Lançamentos.API` (publicação confiável).
 - **Worker** e **Consolidado.API** são deployables separados: o Worker consome e roda jobs;
   a API só lê. Assim a leitura (50 req/s) escala independentemente do consumo.
