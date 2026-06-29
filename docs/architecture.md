@@ -156,7 +156,7 @@ sequenceDiagram
     W->>DB: evento já processado? (idempotência)
     alt novo evento
         W->>DB: aplica crédito/débito na projeção (1 TX: saldo + marca)
-        W->>R: invalida cache do dia
+        W->>R: write-through (grava saldo autoritativo no cache)
         W->>MQ: ACK
     else duplicado
         W->>MQ: ACK (ignora)

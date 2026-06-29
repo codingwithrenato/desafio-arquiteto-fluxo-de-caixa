@@ -18,8 +18,9 @@ public sealed class RedisSaldoConsolidadoCache(
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private static readonly DistributedCacheEntryOptions EntryOptions = new()
     {
-        // TTL curto: a invalidação na escrita mantém o dado fresco; o TTL é só uma rede de segurança.
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+        // TTL curto: o write-through na escrita mantém o valor fresco; o TTL é a rede de
+        // segurança que limita a janela de qualquer leitura desatualizada a poucos segundos.
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60)
     };
 
     private static string Key(string comercianteId, DateOnly data) => $"consolidado:{comercianteId}:{data:yyyy-MM-dd}";

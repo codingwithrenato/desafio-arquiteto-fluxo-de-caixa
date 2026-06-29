@@ -82,27 +82,10 @@ public sealed class RabbitMqConnection : IRabbitMqConnection
     }
 
     /// <summary>
-    /// Declara, de forma idempotente, exchange principal + DLX e a fila do consumidor
-    /// com a DLQ vinculada. A fila aponta seu dead-letter-exchange para o DLX.
+    /// Declara a topologia completa (exchanges + fila durável + DLQ) a partir do shared kernel,
+    /// com os MESMOS argumentos usados pelo publisher (fonte única de verdade).
     /// </summary>
-    private static void DeclareTopology(IModel channel)
-    {
-        channel.ExchangeDeclare(MessagingTopology.Exchange, ExchangeType.Topic, durable: true, autoDelete: false);
-        channel.ExchangeDeclare(MessagingTopology.DeadLetterExchange, ExchangeType.Topic, durable: true, autoDelete: false);
-
-        // Fila principal com dead-lettering.
-        var args = new Dictionary<string, object>
-        {
-            ["x-dead-letter-exchange"] = MessagingTopology.DeadLetterExchange,
-            ["x-dead-letter-routing-key"] = MessagingTopology.LancamentoRegistradoRoutingKey
-        };
-        channel.QueueDeclare(MessagingTopology.ConsolidadoQueue, durable: true, exclusive: false, autoDelete: false, arguments: args);
-        channel.QueueBind(MessagingTopology.ConsolidadoQueue, MessagingTopology.Exchange, MessagingTopology.LancamentoRegistradoRoutingKey);
-
-        // Dead-letter queue.
-        channel.QueueDeclare(MessagingTopology.ConsolidadoDeadLetterQueue, durable: true, exclusive: false, autoDelete: false);
-        channel.QueueBind(MessagingTopology.ConsolidadoDeadLetterQueue, MessagingTopology.DeadLetterExchange, MessagingTopology.LancamentoRegistradoRoutingKey);
-    }
+    private static void DeclareTopology(IModel channel) => RabbitMqTopology.Declare(channel);
 
     public void Dispose()
     {

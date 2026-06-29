@@ -4,6 +4,7 @@ using Consolidado.Worker.Jobs;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Serilog;
+using SharedKernel.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,10 @@ builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("ConsolidadoDb")!, name: "postgres");
 
 var app = builder.Build();
+
+// Espera o PostgreSQL aceitar consultas antes de o Hangfire inicializar seu storage
+// (evita crash de boot com 57P03 "database system is starting up" numa subida fria).
+await StartupGates.WaitForPostgresAsync(hangfireConnection!, app.Logger);
 
 app.UseSerilogRequestLogging();
 

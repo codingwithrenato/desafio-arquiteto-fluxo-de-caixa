@@ -1,5 +1,6 @@
 using BuildingBlocks.Contracts;
 using Consolidado.Application.Abstractions;
+using Consolidado.Application.Consolidados;
 using Consolidado.Application.Consolidados.ConsolidarLancamento;
 using Consolidado.Domain;
 using FluentAssertions;
@@ -56,7 +57,10 @@ public class ConsolidarLancamentoCommandHandlerTests
         await _repository.Received(1).AddAsync(Arg.Is<SaldoDiario>(s => s.TotalCreditos == 200m), Arg.Any<CancellationToken>());
         await _processados.Received(1).MarcarComoProcessadoAsync(comando.EventId, Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-        await _cache.Received(1).RemoveAsync("c1", Dia, Arg.Any<CancellationToken>());
+        // Write-through: grava o valor autoritativo no cache (em vez de invalidar).
+        await _cache.Received(1).SetAsync(
+            Arg.Is<SaldoConsolidadoDto>(d => d.ComercianteId == "c1" && d.TotalCreditos == 200m),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]

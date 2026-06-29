@@ -18,7 +18,7 @@ comprovado por teste de integração e roteiro de resiliência.
 
 | Métrica | Meta | Como é atendida |
 |---|---|---|
-| Throughput de leitura do Consolidado | **≥ 50 req/s** (pico) | Projeção pré-calculada + cache Redis (read-through) + escala horizontal. |
+| Throughput de leitura do Consolidado | **≥ 50 req/s** (pico) | Projeção pré-calculada + cache Redis (write-through) + escala horizontal. |
 | Perda de requisições no pico | **≤ 5%** | Rate limiting (load shedding) devolve 429 controlado em vez de degradar tudo. |
 | Latência de leitura (p95) | < 100 ms | Servida do cache; miss vai a uma projeção O(1). |
 | Latência de escrita (p95) | < 150 ms | Persistência local + Outbox; sem chamada ao Consolidado no caminho. |

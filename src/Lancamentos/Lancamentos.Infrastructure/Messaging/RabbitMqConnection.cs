@@ -86,15 +86,11 @@ public sealed class RabbitMqConnection : IRabbitMqConnection
     }
 
     /// <summary>
-    /// Declara a topologia de forma idempotente: exchange principal (topic, durável)
-    /// e o dead-letter exchange. As filas dos consumidores são declaradas pelo
-    /// próprio consumidor (serviço de Consolidado).
+    /// Declara a topologia completa (exchanges + fila durável do consolidado + DLQ) a partir
+    /// do shared kernel. Declarar a fila também do lado do publisher garante que mensagens
+    /// publicadas numa subida fria não se percam caso o consumidor ainda não tenha subido.
     /// </summary>
-    private static void DeclareTopology(IModel channel)
-    {
-        channel.ExchangeDeclare(MessagingTopology.Exchange, ExchangeType.Topic, durable: true, autoDelete: false);
-        channel.ExchangeDeclare(MessagingTopology.DeadLetterExchange, ExchangeType.Topic, durable: true, autoDelete: false);
-    }
+    private static void DeclareTopology(IModel channel) => RabbitMqTopology.Declare(channel);
 
     public void Dispose()
     {

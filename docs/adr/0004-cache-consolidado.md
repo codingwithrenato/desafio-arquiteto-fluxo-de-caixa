@@ -9,9 +9,17 @@ todos os lançamentos a cada requisição não escala (custo cresce com o histó
 
 ## Decisão
 O Consolidado mantém uma **projeção pré-calculada** (`SaldoDiario`), atualizada
-incrementalmente a cada evento. A leitura é servida por **cache distribuído (Redis)** em
-estratégia **read-through**; em miss, busca a projeção (O(1)) e popula o cache. A escrita
-**invalida** a entrada do dia.
+incrementalmente a cada evento. A leitura é servida por **cache distribuído (Redis)**:
+- **Escrita (consolidação):** estratégia **write-through** — a cada evento, após persistir a
+  projeção, grava no cache o valor autoritativo recém-calculado.
+- **Leitura:** lê do cache; em miss, busca a projeção (O(1)) e popula o cache.
+- **TTL curto (60s):** rede de segurança que limita qualquer leitura desatualizada.
+
+**Por que write-through e não simples invalidação:** a invalidação tem uma race conhecida —
+um leitor lento que leu o banco antes da escrita pode repovoar o cache com o valor antigo
+*depois* da invalidação, deixando-o velho até o TTL. Com write-through, cada evento reafirma o
+valor correto, e o TTL curto limita o resíduo a poucos segundos (consistente com a natureza
+eventualmente consistente do sistema).
 
 Para o pico, a `Consolidado.API` é **stateless** (escala horizontal) e tem **rate limiting**
 (load shedding): requisições acima do limite recebem `429` imediatamente — descarte controlado
@@ -25,5 +33,7 @@ que respeita a tolerância de 5% em vez de degradar todo o serviço.
 ## Consequências
 - ✅ Leitura O(1) com baixa latência; sustenta o pico com folga.
 - ✅ Resiliência: falha no Redis **degrada para o banco** (o cache é acelerador, não SPOF).
-- ⚠️ Cache e banco precisam ser mantidos coerentes (invalidação na escrita).
-- ⚠️ Janela mínima de inconsistência entre a projeção e o cache (consistência eventual).
+- ✅ Write-through mantém o cache quente e correto durante períodos de atividade.
+- ⚠️ Janela mínima de inconsistência (≤ TTL) entre a projeção e o cache (consistência eventual).
+- ⚠️ Correção estrita sob a race exigiria *compare-and-set*/versionamento (ex.: Redis `SETNX`
+  ou Lua com versão `atualizadoEmUtc`) — registrado como evolução futura.

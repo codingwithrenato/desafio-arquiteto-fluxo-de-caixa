@@ -54,8 +54,14 @@ public sealed class ConsolidarLancamentoCommandHandler(
         // Persiste saldo + idempotência atomicamente.
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Invalida o cache do dia; a próxima leitura recarrega do banco (read-through).
-        await cache.RemoveAsync(command.ComercianteId, command.Data, cancellationToken);
+        // Write-through: grava o valor autoritativo recém-calculado no cache. Preferimos
+        // write-through à simples invalidação porque a invalidação tem uma race conhecida —
+        // um leitor lento pode repovoar o cache com um valor antigo logo após a invalidação,
+        // deixando-o velho até o TTL. Com write-through, cada evento reafirma o valor correto.
+        var dto = new SaldoConsolidadoDto(
+            saldo.ComercianteId, saldo.Data, saldo.TotalCreditos, saldo.TotalDebitos,
+            saldo.Saldo, saldo.QuantidadeLancamentos, saldo.AtualizadoEmUtc, saldo.Fechado);
+        await cache.SetAsync(dto, cancellationToken);
 
         logger.LogInformation(
             "Lançamento {LancamentoId} consolidado ({Tipo} {Valor}). Saldo de {ComercianteId} em {Data}: {Saldo}.",

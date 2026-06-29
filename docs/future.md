@@ -37,8 +37,10 @@ Particionar `lancamentos` e `saldos_diarios` por período (mês) para manter as 
 com o crescimento do histórico; política de arquivamento/retenção para dados antigos.
 
 ## 8. Estratégia de cache mais rica
-Cache warming proativo no fechamento do dia, e cache do "saldo do dia corrente" com atualização
-incremental (em vez de invalidação) para eliminar o miss pós-escrita no pico.
+O cache hoje usa write-through + TTL curto. Para correção estrita sob concorrência (eliminar a
+race em que um leitor lento repõe valor antigo), evoluir para **compare-and-set/versionamento**
+no Redis (ex.: `SETNX` ou script Lua comparando `atualizadoEmUtc`). Também: cache warming
+proativo no fechamento do dia.
 
 ## 9. Contratos de evento versionados (schema registry)
 Versionar os eventos de integração (ex.: Avro/JSON Schema em um schema registry) para evoluir o
