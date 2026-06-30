@@ -209,3 +209,68 @@ table.extrato td.debito { color: var(--debito); }
 }
 .extrato-resumo .credito { color: var(--credito); }
 .extrato-resumo .debito { color: var(--debito); }
+
+/* Navegação */
+.nav { display: flex; gap: 6px; }
+.nav-link {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+.nav-link:hover { background: var(--surface-2); color: var(--text); }
+.nav-link.router-link-exact-active {
+  color: var(--accent);
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* Tela de extrato — documento estilo "papel" (bom para apresentar e imprimir) */
+.extrato-page { margin-top: 24px; }
+.statement {
+  background: #ffffff;
+  color: #1a212b;
+  border-radius: 10px;
+  padding: 36px 40px;
+  margin-top: 18px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+.statement .muted { color: #6b7280; }
+.statement-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  border-bottom: 2px solid #1a212b;
+  padding-bottom: 18px;
+}
+.statement-head h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -0.01em; }
+.statement-meta { text-align: right; font-size: 13px; line-height: 1.7; }
+.statement-table { width: 100%; border-collapse: collapse; margin-top: 22px; font-size: 14px; }
+.statement-table th {
+  text-align: left;
+  border-bottom: 1px solid #d1d5db;
+  padding: 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+.statement-table td { padding: 11px 8px; border-bottom: 1px solid #eceef1; }
+.statement-table td.num, .statement-table th.num { text-align: right; font-family: var(--mono); }
+.statement-table .credito { color: #0f9e74; }
+.statement-table .debito { color: #dc2626; }
+.statement-table tfoot td { border-top: 2px solid #1a212b; border-bottom: none; padding-top: 14px; font-size: 13px; }
+.statement-foot { margin-top: 20px; text-align: right; font-size: 14px; }
+.statement-foot .credito { color: #0f9e74; }
+.statement-foot .debito { color: #dc2626; }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #ffffff; }
+  .app { max-width: none; padding: 0; }
+  .extrato-page { margin: 0; }
+  .statement { box-shadow: none; border-radius: 0; margin: 0; padding: 0; }
+}
