@@ -31,6 +31,16 @@ export interface LancamentoDto {
   descricao?: string | null;
 }
 
+export interface ExtratoDto {
+  comercianteId: string;
+  data: string;
+  itens: LancamentoDto[];
+  totalCreditos: number;
+  totalDebitos: number;
+  saldo: number;
+  quantidade: number;
+}
+
 export interface SaldoConsolidadoDto {
   comercianteId: string;
   data: string;
@@ -102,6 +112,18 @@ export async function registrarLancamento(
 
 export async function obterLancamento(token: string, id: string): Promise<LancamentoDto> {
   const resp = await fetch(`${LANC}/lancamentos/${id}`, { headers: authHeader(token) });
+  if (!resp.ok) throw await parseError(resp);
+  return resp.json();
+}
+
+export async function obterExtrato(
+  token: string,
+  comercianteId: string,
+  data: string,
+): Promise<ExtratoDto> {
+  const resp = await fetch(`${LANC}/lancamentos/extrato/${encodeURIComponent(comercianteId)}/${data}`, {
+    headers: authHeader(token),
+  });
   if (!resp.ok) throw await parseError(resp);
   return resp.json();
 }

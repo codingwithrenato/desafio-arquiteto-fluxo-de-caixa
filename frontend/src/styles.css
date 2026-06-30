@@ -172,3 +172,40 @@ button.ghost:hover { background: var(--surface-2); }
 .log div { padding: 2px 0; border-bottom: 1px solid var(--border); color: var(--text-dim); }
 .log div .credito { color: var(--credito); }
 .log div .debito { color: var(--debito); }
+
+table.extrato { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+table.extrato th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+table.extrato td { padding: 10px; border-bottom: 1px solid var(--border); }
+table.extrato td.num, table.extrato th.num { text-align: right; font-family: var(--mono); }
+table.extrato td.credito { color: var(--credito); }
+table.extrato td.debito { color: var(--debito); }
+.tag-credito, .tag-debito {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.tag-credito { background: rgba(45, 212, 167, 0.15); color: var(--credito); }
+.tag-debito { background: rgba(248, 113, 113, 0.15); color: var(--debito); }
+
+.extrato-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.extrato-resumo .credito { color: var(--credito); }
+.extrato-resumo .debito { color: var(--debito); }

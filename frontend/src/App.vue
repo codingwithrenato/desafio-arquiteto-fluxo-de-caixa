@@ -4,6 +4,7 @@ import NovoLancamento from "./components/NovoLancamento.vue";
 import ConsultarLancamento from "./components/ConsultarLancamento.vue";
 import ConsolidadoPanel from "./components/ConsolidadoPanel.vue";
 import SimularPico from "./components/SimularPico.vue";
+import Extrato from "./components/Extrato.vue";
 </script>
 
 <template>
@@ -19,6 +20,7 @@ import SimularPico from "./components/SimularPico.vue";
       <ConsultarLancamento />
       <SimularPico />
       <ConsolidadoPanel />
+      <Extrato />
     </div>
   </div>
 </template>

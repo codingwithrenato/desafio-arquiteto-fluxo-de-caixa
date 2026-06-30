@@ -1,4 +1,5 @@
 using BuildingBlocks.Results;
+using Lancamentos.Application.Lancamentos.ObterExtrato;
 using Lancamentos.Application.Lancamentos.ObterLancamento;
 using Lancamentos.Application.Lancamentos.RegistrarLancamento;
 using Lancamentos.Domain;
@@ -35,6 +36,11 @@ public static class LancamentosEndpoints
             .Produces<LancamentoDto>()
             .Produces(StatusCodes.Status404NotFound);
 
+        grupo.MapGet("/extrato/{comercianteId}/{data}", ObterExtratoAsync)
+            .WithName("ObterExtrato")
+            .WithSummary("Lista os lançamentos de um comerciante em um dia (extrato) com os totais.")
+            .Produces<ExtratoDto>();
+
         return app;
     }
 
@@ -65,5 +71,15 @@ public static class LancamentosEndpoints
         return resultado.IsSuccess
             ? Results.Ok(resultado.Value)
             : Results.NotFound(new { mensagem = resultado.Error.Message });
+    }
+
+    private static async Task<IResult> ObterExtratoAsync(
+        string comercianteId,
+        DateOnly data,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var resultado = await sender.Send(new ObterExtratoQuery(comercianteId, data), cancellationToken);
+        return Results.Ok(resultado.Value);
     }
 }

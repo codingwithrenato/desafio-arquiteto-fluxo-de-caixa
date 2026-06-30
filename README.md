@@ -111,6 +111,10 @@ curl -X POST http://localhost:8081/lancamentos -H "Authorization: Bearer $TOKEN"
 # 3) Consultar o saldo consolidado do dia (aguarde ~5s pela consolidação assíncrona)
 curl http://localhost:8082/consolidado/loja-001/$(date -u +%Y-%m-%d) -H "Authorization: Bearer $TOKEN"
 # => { ... "saldo": 70.00, "quantidadeLancamentos": 2 ... }
+
+# 4) Extrato do dia (lista os lançamentos individuais + totais) — servido pelo Lançamentos
+curl http://localhost:8081/lancamentos/extrato/loja-001/$(date -u +%Y-%m-%d) -H "Authorization: Bearer $TOKEN"
+# => { ... "itens": [ ... ], "totalCreditos": 100.00, "totalDebitos": 30.00, "saldo": 70.00 }
 ```
 
 ### Demonstrar a resiliência (NFR central)
