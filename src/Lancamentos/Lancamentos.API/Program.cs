@@ -4,6 +4,7 @@ using Lancamentos.Application;
 using Lancamentos.Infrastructure;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using SharedKernel.Observability;
 using SharedKernel.Security;
 using SharedKernel.Web;
 
@@ -21,6 +22,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 // Segurança (JWT) + autorização.
 builder.Services.AddJwtAuthentication(builder.Configuration);
+
+// Observabilidade: tracing distribuído (OpenTelemetry → OTLP/Jaeger).
+builder.Services.AddObservability(builder.Configuration, "lancamentos-api");
 
 // Tratamento global de exceções (ProblemDetails).
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

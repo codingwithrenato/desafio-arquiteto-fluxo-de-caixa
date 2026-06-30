@@ -48,6 +48,16 @@ services:
       timeout: 5s
       retries: 10
 
+  # Observabilidade: backend de tracing (recebe OTLP, UI em 16686).
+  # Em produção, troca-se por Datadog/New Relic/Grafana apontando o OTEL_EXPORTER por config.
+  jaeger:
+    image: jaegertracing/all-in-one:1.60
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"   # UI
+      - "4317:4317"     # OTLP gRPC
+
   # ---------- Serviço de Lançamentos ----------
   lancamentos-api:
     build:
@@ -61,6 +71,7 @@ services:
       RabbitMq__UserName: guest
       RabbitMq__Password: guest
       Jwt__SigningKey: "troque-esta-chave-em-producao-use-no-minimo-32-bytes!!"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
     ports:
       - "8081:8080"
     depends_on:
@@ -80,6 +91,7 @@ services:
       ConnectionStrings__Redis: "redis:6379"
       RabbitMq__HostName: rabbitmq
       Jwt__SigningKey: "troque-esta-chave-em-producao-use-no-minimo-32-bytes!!"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
     ports:
       - "8082:8080"
     depends_on:
@@ -100,6 +112,7 @@ services:
       ConnectionStrings__HangfireDb: "Host=postgres;Port=5432;Database=consolidado;Username=postgres;Password=postgres"
       ConnectionStrings__Redis: "redis:6379"
       RabbitMq__HostName: rabbitmq
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
     ports:
       - "8083:8080"   # Dashboard do Hangfire em /hangfire
     depends_on:

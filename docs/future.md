@@ -4,10 +4,11 @@ O desafio pede explicitamente descrever *"o que você gostaria de ter implementa
 futuras"*. Dado o tempo limitado, o escopo entregue foca no núcleo arquitetural e nos requisitos
 não-funcionais; abaixo estão as evoluções naturais, em ordem aproximada de prioridade.
 
-## 1. Observabilidade completa (OpenTelemetry)
-Tracing distribuído ponta a ponta (requisição → Outbox → RabbitMQ → consumo → projeção),
-métricas Prometheus e dashboards Grafana. Hoje há logs estruturados (Serilog) e health checks;
-o próximo passo é correlacionar tudo com `traceId` cruzando os serviços.
+## 1. Observabilidade completa
+**Tracing distribuído já implementado** com OpenTelemetry → Jaeger (ver [ADR 0007](adr/0007-observabilidade-opentelemetry.md)):
+um trace cobre requisição → Outbox → RabbitMQ → consumo → projeção. Próximas camadas:
+**métricas** (OTel Metrics → Prometheus) e **dashboards** (Grafana), além de **logs
+correlacionados** por `traceId` (enriquecer o Serilog com o trace/span atual).
 
 ## 2. API Gateway + BFF
 Um gateway (YARP, Azure API Management) na borda para roteamento, autenticação centralizada,

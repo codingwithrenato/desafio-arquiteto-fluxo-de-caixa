@@ -53,7 +53,8 @@ public sealed class RabbitMqPublisher : IEventPublisher, IMessageBusPublisher
         return Task.CompletedTask;
     }
 
-    public void Publish(string routingKey, ReadOnlyMemory<byte> body, string messageId)
+    public void Publish(string routingKey, ReadOnlyMemory<byte> body, string messageId,
+        IDictionary<string, object>? headers = null)
     {
         _resilience.Execute(() =>
         {
@@ -65,6 +66,8 @@ public sealed class RabbitMqPublisher : IEventPublisher, IMessageBusPublisher
             props.MessageId = messageId;
             props.ContentType = "application/json";
             props.DeliveryMode = 2;
+            if (headers is { Count: > 0 })
+                props.Headers = headers;          // contexto de trace (propagação)
 
             channel.BasicPublish(
                 exchange: MessagingTopology.Exchange,

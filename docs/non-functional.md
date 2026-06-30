@@ -53,11 +53,12 @@ comprovado por teste de integração e roteiro de resiliência.
 
 | Recurso | Implementação |
 |---|---|
+| **Tracing distribuído** | **OpenTelemetry** (vendor-neutral) → OTLP → **Jaeger** (dev) ou Datadog/New Relic/Grafana (prod, por config). Trace único cobre POST → Outbox → RabbitMQ → consumer → projeção. Ver [ADR 0007](adr/0007-observabilidade-opentelemetry.md). |
 | Logs estruturados | **Serilog** (console; sink central em produção: ELK/App Insights). |
 | Health checks | `/health` por serviço (Postgres, Redis conforme o caminho). |
 | Monitoramento de jobs | **Dashboard do Hangfire** (histórico, retries, agendamentos). |
 | Mensageria | RabbitMQ Management UI (profundidade de fila, DLQ). |
-| Próximos passos | Métricas Prometheus + tracing distribuído (OpenTelemetry) — ver [`future.md`](future.md). |
+| Próximos passos | Métricas Prometheus + dashboards Grafana + logs correlacionados por trace id — ver [`future.md`](future.md). |
 
 ## Resumo de rastreabilidade (requisito → mecanismo)
 

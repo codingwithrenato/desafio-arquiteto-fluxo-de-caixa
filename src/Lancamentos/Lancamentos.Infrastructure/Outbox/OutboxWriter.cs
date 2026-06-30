@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using BuildingBlocks.Contracts;
 using BuildingBlocks.Messaging;
@@ -24,6 +25,8 @@ public sealed class OutboxWriter(LancamentosDbContext context) : IOutbox
             RoutingKey = ResolveRoutingKey(integrationEvent),
             Conteudo = JsonSerializer.Serialize(integrationEvent, integrationEvent.GetType(), SerializerOptions),
             OccurredOnUtc = integrationEvent.OccurredOnUtc,
+            // Captura o trace da requisição atual para correlacionar a consolidação futura.
+            TraceParent = Activity.Current?.Id,
             Tentativas = 0
         };
 

@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using BuildingBlocks.Contracts;
 using BuildingBlocks.Messaging;
+using BuildingBlocks.Observability;
 using Consolidado.Application.Consolidados.ConsolidarLancamento;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,6 +63,12 @@ public sealed class LancamentoRegistradoConsumer(
 
     private async Task OnMessageAsync(object sender, BasicDeliverEventArgs ea)
     {
+        // Continua o trace iniciado no publisher: extrai o contexto dos headers da mensagem
+        // e abre um span "consumer" — costurando o trace através da fronteira assíncrona.
+        var parentContext = TraceContextPropagation.Extract(ea.BasicProperties?.Headers);
+        using var activity = Telemetry.Source.StartActivity(
+            $"consume {ea.RoutingKey}", ActivityKind.Consumer, parentContext.ActivityContext);
+
         LancamentoRegistradoEvent? evento;
         try
         {

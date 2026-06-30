@@ -6,6 +6,7 @@ using Consolidado.Infrastructure;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using SharedKernel.Observability;
 using SharedKernel.Security;
 using SharedKernel.Web;
 
@@ -19,6 +20,9 @@ builder.Host.UseSerilog((context, config) =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
+
+// Observabilidade: tracing distribuído (OpenTelemetry → OTLP/Jaeger).
+builder.Services.AddObservability(builder.Configuration, "consolidado-api");
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

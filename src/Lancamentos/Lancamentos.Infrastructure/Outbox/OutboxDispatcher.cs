@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Text;
+using BuildingBlocks.Observability;
 using Lancamentos.Infrastructure.Messaging;
 using Lancamentos.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -73,16 +75,26 @@ public sealed class OutboxDispatcher(
 
         foreach (var mensagem in pendentes)
         {
+            // Span "producer" vinculado ao trace da requisição original (TraceParent do outbox).
+            using var activity = Telemetry.Source.StartActivity(
+                $"publish {mensagem.RoutingKey}", ActivityKind.Producer, mensagem.TraceParent);
+
             try
             {
                 var body = Encoding.UTF8.GetBytes(mensagem.Conteudo);
-                publisher.Publish(mensagem.RoutingKey, body, mensagem.Id.ToString());
+
+                // Injeta o contexto de trace nos headers para o consumidor continuar o trace.
+                var headers = new Dictionary<string, object>();
+                TraceContextPropagation.Inject(activity ?? Activity.Current, headers);
+
+                publisher.Publish(mensagem.RoutingKey, body, mensagem.Id.ToString(), headers);
 
                 mensagem.ProcessadoEmUtc = DateTime.UtcNow;
                 mensagem.UltimoErro = null;
             }
             catch (Exception ex)
             {
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 mensagem.Tentativas++;
                 mensagem.UltimoErro = ex.Message;
                 logger.LogWarning(ex,

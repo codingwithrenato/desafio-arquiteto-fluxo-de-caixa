@@ -4,6 +4,7 @@ using Consolidado.Worker.Jobs;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Serilog;
+using SharedKernel.Observability;
 using SharedKernel.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,9 @@ builder.Host.UseSerilog((context, config) =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddConsumidorDeLancamentos();
+
+// Observabilidade: tracing distribuído (OpenTelemetry → OTLP/Jaeger).
+builder.Services.AddObservability(builder.Configuration, "consolidado-worker");
 
 // Hangfire com storage no PostgreSQL.
 var hangfireConnection = builder.Configuration.GetConnectionString("HangfireDb");

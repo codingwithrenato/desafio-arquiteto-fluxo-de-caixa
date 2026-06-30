@@ -58,7 +58,7 @@ processados no catch-up quando ele voltar. Detalhes em [`docs/architecture.md`](
 | Jobs | **Hangfire** (fechamento diário + reconciliação, no Worker) |
 | Resiliência | **Polly** (retry + circuit breaker), consumer idempotente, dead-letter |
 | Segurança | **JWT** Bearer, autorização por policy, validação (FluentValidation) |
-| Observabilidade | Serilog, health checks, rate limiting |
+| Observabilidade | **OpenTelemetry** (tracing distribuído → Jaeger), Serilog, health checks, rate limiting |
 | Testes | xUnit, FluentAssertions, NSubstitute, **Testcontainers** |
 | Infra | Docker / Docker Compose, GitHub Actions (CI), Terraform (IaC ilustrativa) |
 
@@ -87,6 +87,7 @@ o Worker e o **frontend** (console de testes). As migrations são aplicadas auto
 | Lançamentos — Swagger | http://localhost:8081/swagger | Registrar/consultar lançamentos |
 | Consolidado — Swagger | http://localhost:8082/swagger | Consultar saldo consolidado |
 | Hangfire Dashboard | http://localhost:8083/hangfire | Jobs recorrentes (fechamento/reconciliação) |
+| **Jaeger (tracing)** | http://localhost:16686 | Traces distribuídos ponta a ponta (POST → Outbox → fila → consumer → projeção) |
 | RabbitMQ Management | http://localhost:15672 | Filas e mensagens (guest/guest) |
 | Health checks | `/health` em 8081 e 8082 | Liveness/readiness |
 

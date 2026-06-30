@@ -16,6 +16,7 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
         builder.Property(x => x.RoutingKey).HasMaxLength(200).IsRequired();
         builder.Property(x => x.Conteudo).HasColumnType("jsonb").IsRequired();
         builder.Property(x => x.OccurredOnUtc).IsRequired();
+        builder.Property(x => x.TraceParent).HasMaxLength(200);
         builder.Property(x => x.UltimoErro).HasMaxLength(2000);
 
         // Índice parcial: o dispatcher só varre mensagens ainda não processadas.

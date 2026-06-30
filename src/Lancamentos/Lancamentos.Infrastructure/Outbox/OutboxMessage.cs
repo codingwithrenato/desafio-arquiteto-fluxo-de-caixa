@@ -20,6 +20,13 @@ public sealed class OutboxMessage
 
     public DateTime OccurredOnUtc { get; set; }
 
+    /// <summary>
+    /// Contexto de trace (W3C traceparent) capturado no momento do registro do lançamento.
+    /// Permite que o consumidor, lá na frente, vincule a consolidação ao trace da requisição
+    /// original — rastreamento distribuído através da fronteira assíncrona (Outbox + broker).
+    /// </summary>
+    public string? TraceParent { get; set; }
+
     /// <summary>Nulo enquanto pendente; preenchido quando publicado com sucesso.</summary>
     public DateTime? ProcessadoEmUtc { get; set; }
 
