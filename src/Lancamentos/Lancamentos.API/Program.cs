@@ -10,11 +10,8 @@ using SharedKernel.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Observabilidade estruturada.
-builder.Host.UseSerilog((context, config) =>
-    config.ReadFrom.Configuration(context.Configuration)
-          .WriteTo.Console()
-          .Enrich.FromLogContext());
+// Observabilidade estruturada (logs com TraceId/SpanId para correlação com os traces).
+builder.Host.UseSerilog(SerilogConfiguration.Configure);
 
 // Camadas (Clean Architecture).
 builder.Services.AddApplication();

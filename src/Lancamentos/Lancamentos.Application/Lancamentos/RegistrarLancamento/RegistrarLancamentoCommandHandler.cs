@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using BuildingBlocks.Contracts;
 using BuildingBlocks.Results;
 using Lancamentos.Application.Abstractions;
@@ -60,6 +61,12 @@ public sealed class RegistrarLancamentoCommandHandler(
         outbox.Enqueue(evento);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        Activity.Current?.AddEvent(new ActivityEvent("lançamento registrado", tags: new ActivityTagsCollection
+        {
+            ["lancamentoId"] = lancamento.Id,
+            ["tipo"] = lancamento.Tipo.ToString(),
+        }));
 
         logger.LogInformation(
             "Lançamento {LancamentoId} registrado ({Tipo} {Valor}) e evento enfileirado no outbox.",

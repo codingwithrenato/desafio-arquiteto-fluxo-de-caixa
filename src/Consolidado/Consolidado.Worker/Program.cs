@@ -9,10 +9,7 @@ using SharedKernel.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((context, config) =>
-    config.ReadFrom.Configuration(context.Configuration)
-          .WriteTo.Console()
-          .Enrich.FromLogContext());
+builder.Host.UseSerilog(SerilogConfiguration.Configure);
 
 // Camadas + consumidor da fila (este host É o job-worker, separado da read-API).
 builder.Services.AddApplication();

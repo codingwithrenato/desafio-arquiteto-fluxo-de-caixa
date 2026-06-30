@@ -36,10 +36,24 @@ serviços e o broker (verificado no Jaeger: 1 trace, 2 serviços, spans encadead
 - **Só correlacionar logs por requestId:** ajuda, mas não dá a visão de cascata (waterfall) nem
   os tempos por etapa que o tracing oferece.
 
+## Logs: correlação e span events
+O Jaeger é um backend de **traces**, não um agregador de logs. Para unir os pilares sem um
+backend de logs dedicado:
+- **Correlação por trace_id:** o Serilog é enriquecido com `TraceId`/`SpanId` da Activity atual
+  (`ActivityEnricher`), então cada linha de log carrega o `trace_id`. Pega-se um trace no Jaeger
+  e encontram-se os logs daquele fluxo — inclusive **cruzando serviços** (o mesmo `trace_id`
+  aparece nos logs do Lançamentos e do Consolidado).
+- **Span events:** anotações de domínio nos pontos-chave (`lançamento registrado`,
+  `idempotência: evento já processado`, `consolidado atualizado`) aparecem **dentro do span** no
+  Jaeger, com tags — visíveis na própria linha do tempo do trace.
+
+Visualização de logs em UI unificada (Loki/Grafana ou ELK) fica como evolução (ver `future.md`).
+
 ## Consequências
 - ✅ Diagnóstico ponta a ponta do fluxo assíncrono, com latência por etapa.
+- ✅ Logs correlacionados ao trace (mesmo `trace_id`) e eventos de domínio visíveis no trace.
 - ✅ Sem lock-in: mesma instrumentação serve qualquer backend OTLP.
 - ✅ Overhead baixo; sem `OTEL_EXPORTER_OTLP_ENDPOINT`, o tracing é praticamente no-op.
 - ⚠️ Propagar o contexto pelo Outbox exigiu uma coluna extra (`trace_parent`) e cuidado para
   parentar o span do dispatcher no trace original.
-- ⚠️ Métricas e logs correlacionados ainda não cobertos (próxima camada).
+- ⚠️ Métricas (Prometheus) e UI unificada de logs ainda não cobertas (próxima camada).

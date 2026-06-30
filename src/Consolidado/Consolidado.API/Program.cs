@@ -12,10 +12,7 @@ using SharedKernel.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((context, config) =>
-    config.ReadFrom.Configuration(context.Configuration)
-          .WriteTo.Console()
-          .Enrich.FromLogContext());
+builder.Host.UseSerilog(SerilogConfiguration.Configure);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);

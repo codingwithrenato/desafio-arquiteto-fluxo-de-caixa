@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using BuildingBlocks.Contracts;
 using BuildingBlocks.Results;
 using Consolidado.Application.Abstractions;
@@ -26,6 +27,7 @@ public sealed class ConsolidarLancamentoCommandHandler(
     {
         if (await processados.JaProcessadoAsync(command.EventId, cancellationToken))
         {
+            Activity.Current?.AddEvent(new ActivityEvent("idempotencia: evento já processado"));
             logger.LogInformation("Evento {EventId} já processado — ignorando (idempotência).", command.EventId);
             return Result.Success();
         }
@@ -62,6 +64,12 @@ public sealed class ConsolidarLancamentoCommandHandler(
             saldo.ComercianteId, saldo.Data, saldo.TotalCreditos, saldo.TotalDebitos,
             saldo.Saldo, saldo.QuantidadeLancamentos, saldo.AtualizadoEmUtc, saldo.Fechado);
         await cache.SetAsync(dto, cancellationToken);
+
+        Activity.Current?.AddEvent(new ActivityEvent("consolidado atualizado", tags: new ActivityTagsCollection
+        {
+            ["comerciante"] = command.ComercianteId,
+            ["saldo"] = saldo.Saldo,
+        }));
 
         logger.LogInformation(
             "Lançamento {LancamentoId} consolidado ({Tipo} {Valor}). Saldo de {ComercianteId} em {Data}: {Saldo}.",
