@@ -18,7 +18,7 @@ e diagramas de sequência. Os diagramas são em **Mermaid** (renderizam no GitHu
 
 ```mermaid
 flowchart TB
-    comerciante["👤 Comerciante<br/>(cliente da API)"]
+    comerciante["Comerciante<br/>(cliente da API)"]
 
     subgraph sistema["Sistema de Fluxo de Caixa"]
         lanc["Serviço de Lançamentos<br/>(débitos e créditos)"]
@@ -39,7 +39,7 @@ O comerciante interage com **dois serviços independentes**. A comunicação ent
 
 ```mermaid
 flowchart TB
-    cliente["👤 Comerciante"]
+    cliente["Comerciante"]
 
     subgraph svcLanc["Serviço de Lançamentos"]
         apiL["Lançamentos.API<br/>[.NET 8 Minimal API]<br/>registra lançamentos · Outbox dispatcher"]
@@ -117,7 +117,7 @@ sequenceDiagram
     autonumber
     participant C as Comerciante
     participant API as Lançamentos.API
-    participant DB as PostgreSQL (Lanç.)
+    participant DB as PostgreSQL Lanç.
     participant OD as OutboxDispatcher
     participant MQ as RabbitMQ
 
@@ -147,7 +147,7 @@ sequenceDiagram
     autonumber
     participant MQ as RabbitMQ
     participant W as Consolidado.Worker
-    participant DB as PostgreSQL (Consol.)
+    participant DB as PostgreSQL Consol.
     participant R as Redis
     participant API as Consolidado.API
     participant C as Comerciante
@@ -162,7 +162,7 @@ sequenceDiagram
         W->>MQ: ACK (ignora)
     end
 
-    C->>API: GET /consolidado/{comerciante}/{data} (JWT)
+    C->>API: GET /consolidado/:comerciante/:data (JWT)
     API->>R: lê do cache
     alt cache hit
         R-->>API: saldo
@@ -185,16 +185,16 @@ sequenceDiagram
     autonumber
     participant C as Comerciante
     participant API as Lançamentos.API
-    participant DB as PostgreSQL (Lanç.)
+    participant DB as PostgreSQL Lanç.
     participant MQ as RabbitMQ
     participant W as Consolidado.Worker
 
-    Note over W: 💥 Worker/Consolidado fora do ar
+    Note over W: Worker/Consolidado fora do ar (falha)
     C->>API: POST /lancamentos
     API->>DB: grava lançamento + outbox
-    API-->>C: 202 Accepted ✅ (segue disponível)
+    API-->>C: 202 Accepted (segue disponível)
     Note over MQ: mensagens acumulam na fila durável
-    Note over W: ♻️ Worker volta
+    Note over W: Worker volta (catch-up)
     W->>MQ: consome o backlog (catch-up)
     W->>DB: projeta os saldos pendentes
 ```
