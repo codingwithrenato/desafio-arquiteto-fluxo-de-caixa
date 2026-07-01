@@ -1,7 +1,12 @@
 # Spec — Extrato de lançamentos do dia
 
 **Data:** 2026-06-29
-**Status:** Aprovado
+**Status:** Implementado
+
+> **Atualização pós-implementação:** o painel "Extrato" embutido no console descrito nesta spec
+> foi posteriormente **substituído por uma tela dedicada** (`/extrato`, ver a spec
+> `2026-06-29-tela-extrato-design.md`) e removido do console (commit `f9cac0b`) para eliminar a
+> duplicação. O **backend** do extrato (query + endpoint) permanece como descrito aqui.
 
 ## Objetivo
 Permitir visualizar o **extrato** (lista dos lançamentos de débito/crédito de um comerciante

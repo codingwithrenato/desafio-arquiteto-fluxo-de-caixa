@@ -5,10 +5,12 @@ futuras"*. Dado o tempo limitado, o escopo entregue foca no núcleo arquitetural
 não-funcionais; abaixo estão as evoluções naturais, em ordem aproximada de prioridade.
 
 ## 1. Observabilidade completa
-**Tracing distribuído já implementado** com OpenTelemetry → Jaeger (ver [ADR 0007](adr/0007-observabilidade-opentelemetry.md)):
-um trace cobre requisição → Outbox → RabbitMQ → consumo → projeção. Próximas camadas:
-**métricas** (OTel Metrics → Prometheus) e **dashboards** (Grafana), além de **logs
-correlacionados** por `traceId` (enriquecer o Serilog com o trace/span atual).
+**Tracing distribuído e correlação de logs já implementados** com OpenTelemetry → Jaeger
+(ver [ADR 0007](adr/0007-observabilidade-opentelemetry.md)): um trace cobre requisição → Outbox
+→ RabbitMQ → consumo → projeção, e o Serilog já enriquece cada log com o `trace_id`/`span_id`
+da Activity atual (correlação log ↔ trace, inclusive cruzando serviços). Próximas camadas:
+**métricas** (OTel Metrics → Prometheus) e **dashboards** (Grafana), além de uma **UI unificada
+de logs** (Loki/Grafana ou ELK) para busca e filtragem centralizada.
 
 ## 2. API Gateway + BFF
 Um gateway (YARP, Azure API Management) na borda para roteamento, autenticação centralizada,

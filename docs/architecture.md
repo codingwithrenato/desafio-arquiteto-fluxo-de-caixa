@@ -64,7 +64,7 @@ flowchart TB
     apiL -->|"publica evento"| broker
     broker -->|"consome"| worker
     worker -->|"projeta saldo"| dbC
-    worker -->|"invalida"| cache
+    worker -->|"write-through"| cache
     apiC -->|"lê (read-through)"| cache
     apiC -->|"miss → projeção"| dbC
 ```

@@ -1,11 +1,16 @@
 # Spec — Tela dedicada de extrato (estilo extrato bancário)
 
 **Data:** 2026-06-29
-**Status:** Aprovado
+**Status:** Implementado
+
+> **Atualização pós-implementação:** o painel de extrato **embutido no console foi removido**
+> (commit `f9cac0b`) para eliminar a duplicação. Hoje o extrato existe **apenas** como esta tela
+> dedicada (`/extrato`, `ExtratoView.vue`); as menções abaixo ao "painel embutido" refletem o
+> desenho original, não o estado final.
 
 ## Objetivo
 Criar uma **tela dedicada** para apresentar o extrato (estilo extrato bancário), em rota
-própria, pronta para mostrar/imprimir — complementando o painel embutido do console.
+própria, pronta para mostrar/imprimir.
 
 ## Roteamento
 - Adicionar **Vue Router** ao frontend.

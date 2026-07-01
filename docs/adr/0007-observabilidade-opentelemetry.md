@@ -44,7 +44,7 @@ backend de logs dedicado:
   e encontram-se os logs daquele fluxo — inclusive **cruzando serviços** (o mesmo `trace_id`
   aparece nos logs do Lançamentos e do Consolidado).
 - **Span events:** anotações de domínio nos pontos-chave (`lançamento registrado`,
-  `idempotência: evento já processado`, `consolidado atualizado`) aparecem **dentro do span** no
+  `idempotencia: evento já processado`, `consolidado atualizado`) aparecem **dentro do span** no
   Jaeger, com tags — visíveis na própria linha do tempo do trace.
 
 Visualização de logs em UI unificada (Loki/Grafana ou ELK) fica como evolução (ver `future.md`).

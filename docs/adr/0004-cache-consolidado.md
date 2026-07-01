@@ -27,8 +27,11 @@ que respeita a tolerância de 5% em vez de degradar todo o serviço.
 
 ## Alternativas consideradas
 - **Somar lançamentos on-the-fly:** custo crescente, não sustenta 50 req/s. Rejeitada.
-- **Cache sem invalidação (só TTL):** simples, mas serve dado velho por mais tempo. Adotamos
-  invalidação na escrita + TTL curto como rede de segurança.
+- **Cache sem atualização na escrita (só TTL):** simples, mas serve dado velho por mais tempo.
+  Adotamos **write-through** na escrita (grava o saldo autoritativo recém-calculado) + TTL curto
+  como rede de segurança.
+- **Invalidação na escrita (remover a chave):** exige releitura no próximo GET e abre janela de
+  corrida (um leitor lento pode repovoar valor velho após a invalidação). Preferimos write-through.
 
 ## Consequências
 - ✅ Leitura O(1) com baixa latência; sustenta o pico com folga.

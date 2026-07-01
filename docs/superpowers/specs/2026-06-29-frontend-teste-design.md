@@ -23,7 +23,7 @@ Consolidado sem depender de curl/Swagger — facilitando a apresentação do des
 
 ## Funcionalidades (painéis)
 1. **Autenticação** — informa `comercianteId`; chama `POST /auth/token`; guarda o JWT em
-   memória e exibe o status. Todos os painés usam esse token e comerciante.
+   memória e exibe o status. Todos os painéis usam esse token e comerciante.
 2. **Novo lançamento** — formulário (valor, tipo crédito/débito, descrição); `POST /lancamentos`;
    mostra `202 Accepted` e o id retornado.
 3. **Consultar lançamento** — por id; `GET /lancamentos/{id}`.
