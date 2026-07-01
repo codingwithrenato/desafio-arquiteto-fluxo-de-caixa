@@ -54,7 +54,7 @@ processados no catch-up quando ele voltar. Detalhes em [`docs/architecture.md`](
 | Arquitetura | Clean Architecture, DDD, **CQRS** (MediatR), Outbox, Result pattern |
 | Mensageria | **RabbitMQ** (exchange topic, fila durável, DLQ) |
 | Persistência | **PostgreSQL** (database-per-service), EF Core |
-| Cache | **Redis** (read-through no consolidado) |
+| Cache | **Redis** (cache do saldo; write-through na consolidação, TTL) |
 | Jobs | **Hangfire** (fechamento diário + reconciliação, no Worker) |
 | Resiliência | **Polly** (retry + circuit breaker), consumer idempotente, dead-letter |
 | Segurança | **JWT** Bearer, autorização por policy, validação (FluentValidation) |
@@ -173,6 +173,7 @@ Cada serviço segue **Clean Architecture** (dependências apontando para dentro)
 | [0004](docs/adr/0004-cache-consolidado.md) | Projeção + cache no consolidado | Sustentar 50 req/s na leitura |
 | [0005](docs/adr/0005-cqrs.md) | CQRS | Separar escrita (lançar) de leitura (consultar) |
 | [0006](docs/adr/0006-hangfire-worker.md) | Hangfire isolado no Worker | Fechamento diário sem afetar a escala de leitura |
+| [0007](docs/adr/0007-observabilidade-opentelemetry.md) | Observabilidade com OpenTelemetry | Tracing distribuído ponta a ponta (→ Jaeger) e correlação de logs |
 
 Veja também os [requisitos não-funcionais e métricas](docs/non-functional.md) e as
 [evoluções futuras](docs/future.md).
