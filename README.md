@@ -16,24 +16,36 @@ picos de **50 req/s**.
 
 ## Visão geral da arquitetura
 
-```
-  POST /lancamentos                                          GET /consolidado/{comerciante}/{data}
-        │                                                                    ▲
-        ▼                                                                    │
-┌───────────────────┐    grava lançamento + evento        ┌──────────────────────────────────┐
-│  Lançamentos.API  │──── (mesma transação / Outbox) ────▶ │     PostgreSQL · db lancamentos  │
-│  Clean Arch+CQRS  │                                      └──────────────────────────────────┘
-│  + OutboxDispatcher│─── publica ──▶ ┌───────────────┐
-└───────────────────┘                │   RabbitMQ    │   exchange topic + fila durável + DLQ
-                                      └───────────────┘
-                                              │ consumo assíncrono e idempotente
-                                              ▼
-┌────────────────────┐   projeta saldo   ┌──────────────────────┐      ┌───────────────────┐
-│ Consolidado.Worker │──────────────────▶│ PostgreSQL·db consol. │      │  Consolidado.API  │
-│ consumer + Hangfire│                   └──────────────────────┘      │  leitura + cache  │
-│ (fechamento diário)│                            ▲                    └─────────┬─────────┘
-└────────────────────┘                            │   read-through              │
-                                                  └──────── Redis ◀──────────────┘
+```mermaid
+flowchart TB
+    cli["Comerciante"]
+
+    subgraph svcLanc["Serviço de Lançamentos"]
+        apiL["Lançamentos.API<br/>Clean Arch + CQRS · OutboxDispatcher"]
+        dbL[("PostgreSQL<br/>db lancamentos")]
+    end
+
+    mq{{"RabbitMQ<br/>exchange topic · fila durável · DLQ"}}
+
+    subgraph svcCons["Serviço de Consolidado"]
+        worker["Consolidado.Worker<br/>consumer idempotente · Hangfire<br/>(fechamento diário)"]
+        dbC[("PostgreSQL<br/>db consolidado")]
+        apiC["Consolidado.API<br/>leitura + cache"]
+        redis[("Redis<br/>saldo cacheado")]
+    end
+
+    %% Caminho de escrita
+    cli -->|"POST /lancamentos"| apiL
+    apiL -->|"grava lançamento + evento<br/>(mesma transação / Outbox)"| dbL
+    apiL -->|"publica"| mq
+    mq -->|"consumo assíncrono e idempotente"| worker
+    worker -->|"projeta saldo"| dbC
+    worker -->|"write-through"| redis
+
+    %% Caminho de leitura
+    cli -->|"GET /consolidado/:comerciante/:data"| apiC
+    apiC -->|"read-through"| redis
+    apiC -.->|"miss → projeção"| dbC
 ```
 
 > **Database-per-service lógico:** os bancos `lancamentos` e `consolidado` são isolados (sem
