@@ -52,10 +52,6 @@ flowchart TB
 > acesso cruzado). Em dev eles compartilham um mesmo servidor PostgreSQL; em produção podem ser
 > instâncias dedicadas trocando apenas o `Host` da connection string (ver [ADR 0002](docs/adr/0002-database-per-service.md)).
 
-**Por que assíncrono?** É a decisão central do desafio: Lançamentos nunca chama o Consolidado
-diretamente. Se o Consolidado cair, os eventos ficam no **Outbox** e na **fila durável** e são
-processados no catch-up quando ele voltar. Detalhes em [`docs/architecture.md`](docs/architecture.md).
-
 ---
 
 ## Stack
